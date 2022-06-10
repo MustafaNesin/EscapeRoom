@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Escape Room</title>
-    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="container">
@@ -118,9 +118,9 @@
         </div>
     </div>
 </div>
-<script src="/js/jquery-3.6.0.min.js"></script>
-<script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/tau-prolog.js"></script>
+<script src="./js/jquery-3.6.0.min.js"></script>
+<script src="./js/bootstrap.bundle.min.js"></script>
+<script src="./js/tau-prolog.js"></script>
 <script>
     var showMessage = function(title, body) {
         $('#message_modal .modal-title').html(title);
@@ -129,7 +129,7 @@
     };
 
     $(function() {
-        $.get('game.pl', function(game_pl) {
+        $.get('./game.pl', function(game_pl) {
             const session = pl.create();
 
             session.consult(game_pl);
