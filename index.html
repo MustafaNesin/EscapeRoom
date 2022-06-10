@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Escape Room</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-12 order-1 col-sm-6 order-sm-1 col-lg-3 order-lg-0 my-3">
+            <div class="text-center mb-3">
+                <h1 class="display-6 mb-1">
+                    Characters
+                </h1>
+                <span class="text-muted">
+                    Characters in the room
+                </span>
+            </div>
+            <div id="room_characters"></div>
+        </div>
+        <div class="col-12 order-2 col-sm-6 order-sm-3 col-lg-3 order-lg-1 my-3">
+            <div class="text-center mb-3">
+                <h1 class="display-6 mb-1">
+                    Items
+                </h1>
+                <span class="text-muted">
+                    Items in the room
+                </span>
+            </div>
+            <div id="room_items"></div>
+        </div>
+        <div class="col-12 order-0 col-sm-6 order-sm-0 col-lg-3 order-lg-2 my-3">
+            <div class="text-center mb-3">
+                <h1 class="display-6 mb-1">
+                    Location
+                </h1>
+                <span class="text-muted">
+                    Your current location is
+                </span>
+                <span class="text-muted fw-bold player_location"></span>
+            </div>
+            <div>
+                <div class="row justify-content-center">
+                    <div class="col-auto">
+                        <button id="go_north" type="button" class="btn btn-primary">
+                            North
+                        </button>
+                    </div>
+                </div>
+                <div class="row justify-content-center my-1">
+                    <div class="col-auto">
+                        <button id="go_west" type="button" class="btn btn-primary">
+                            West
+                        </button>
+                    </div>
+                    <div class="col-auto">
+                        <button id="go_east" type="button" class="btn btn-primary">
+                            East
+                        </button>
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-auto">
+                        <button id="go_south" type="button" class="btn btn-primary">
+                            South
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 order-3 col-sm-6 order-sm-2 col-lg-3 order-lg-3 my-3">
+            <div class="text-center mb-3">
+                <h1 class="display-6 mb-1">
+                    Inventory
+                </h1>
+                <span class="text-muted">
+                    Items in your inventory
+                </span>
+            </div>
+            <div id="inventory_items"></div>
+        </div>
+    </div>
+</div>
+<div id="object_template" class="visually-hidden">
+    <div class="card mb-2 bg-light text-center">
+        <div class="card-body">
+            <h5 class="object_name card-title text-capitalize"></h5>
+            <div class="btn-group-sm" role="group" aria-label="Actions">
+                <button type="button" class="object_kill btn btn-danger visually-hidden">
+                    Kill
+                </button>
+                <button type="button" class="object_take btn btn-primary visually-hidden">
+                    Take
+                </button>
+                <button type="button" class="object_drop btn btn-secondary visually-hidden">
+                    Drop
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="message_modal" class="modal fade" tabindex="-1" aria-labelledby="message_modal_title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="message_modal_title" class="modal-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/js/jquery-3.6.0.min.js"></script>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/tau-prolog.js"></script>
+<script>
+    var showMessage = function(title, body) {
+        $('#message_modal .modal-title').html(title);
+        $('#message_modal .modal-body').html(body);
+        $('#message_modal').modal('show');
+    };
+
+    $(function() {
+        $.get('game.pl', function(game_pl) {
+            const session = pl.create();
+
+            session.consult(game_pl);
+            session.query('init.');
+            session.answer(console.log);
+        }, 'text');
+    });
+</script>
+</body>
+</html>
