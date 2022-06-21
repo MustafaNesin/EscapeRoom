@@ -1,5 +1,6 @@
 :- use_module(library(dom)).
 :- use_module(library(js)).
+:- use_module(library(lists)).
 :- dynamic(object_information/3).
 :- dynamic(object_relation/3).
 
@@ -10,21 +11,40 @@ object_definition(room, living_room).
 object_definition(room, garage).
 object_definition(room, dining_room).
 object_definition(room, kitchen).
+object_definition(room, garden).
 object_definition(room, hall).
-object_definition(room, exit).
+object_definition(room, hall_exit).
+object_definition(room, garage_exit).
 object_definition(character, player).
 object_definition(character, enemy).
+object_definition(character, dog).
+object_definition(item, leash).
+object_definition(item, medical_dressing).
+object_definition(item, garden_key).
 object_definition(item, knife).
-object_definition(item, key).
+object_definition(item, dog_food).
+object_definition(item, hall_exit_key).
+object_definition(item, garage_exit_key).
 
 % object_information(Type, Object, Value)
+object_information(healed, player, false).
 object_information(alive, enemy, true).
+object_information(alive, dog, true).
+object_information(petted, dog, false).
+object_information(tied, dog, false).
+object_information(locked, garden, true).
 
 % object_relation(Type, Object1, Object2)
 object_relation(location, player, bedroom).
-object_relation(location, enemy, kitchen).
+object_relation(location, leash, bedroom).
+object_relation(location, medical_dressing, bathroom).
 object_relation(location, knife, garage).
-object_relation(inventory, key, enemy).
+object_relation(location, dog_food, dining_room).
+object_relation(location, enemy, kitchen).
+object_relation(location, dog, garden).
+object_relation(location, garden_key, hall).
+object_relation(inventory, hall_exit_key, enemy).
+object_relation(inventory, garage_exit_key, dog).
 
 % object_relation(Type, Object1, Object2, Value)
 object_relation(direction, bedroom, living_room, east).
@@ -35,12 +55,16 @@ object_relation(direction, living_room, hall, east).
 object_relation(direction, living_room, garage, south).
 object_relation(direction, living_room, bedroom, west).
 object_relation(direction, garage, living_room, north).
+object_relation(direction, garage, garage_exit, south).
 object_relation(direction, dining_room, kitchen, east).
 object_relation(direction, dining_room, living_room, south).
 object_relation(direction, kitchen, dining_room, west).
+object_relation(direction, garden, hall, north).
 object_relation(direction, hall, living_room, west).
-object_relation(direction, hall, exit, east).
-object_relation(direction, exit, hall, west).
+object_relation(direction, hall, hall_exit, east).
+object_relation(direction, hall, garden, south).
+object_relation(direction, hall_exit, hall, west).
+object_relation(direction, garage_exit, garage, north).
 
 init :-
     % Bind direction buttons
@@ -68,17 +92,46 @@ init :-
     update_ui.
 
 go(Direction) :-
-    object_relation(location, player, exit),
-    (  object_relation(direction, exit, _, Direction)
+    object_relation(location, player, hall_exit),
+    (  object_relation(direction, hall_exit, _, Direction)
     -> showMessage("Info", "Refresh the page to restart the game.")
-    ;  true).
+    ;  true), !.
 
 go(Direction) :-
-    object_relation(location, player, hall),
-    object_relation(direction, hall, exit, Direction),
-    (  object_relation(inventory, key, player)
+    object_relation(location, player, garage_exit),
+    (  object_relation(direction, garage_exit, _, Direction)
+    -> showMessage("Info", "Refresh the page to restart the game.")
+    ;  true), !.
+
+% Trying to unlock the garden door
+go(Direction) :-
+    object_relation(location, player, Location),
+    object_relation(direction, Location, garden, Direction),
+    object_information(locked, garden, true),
+    (  object_relation(inventory, garden_key, player)
+    -> (
+         retract(object_relation(inventory, garden_key, player)),
+         retract(object_information(locked, garden, true)),
+         assertz(object_information(locked, garden, false)),
+         false
+       )
+    ;  showMessage("Info", "You need the key to unlock the garden door.")), !.
+
+% Trying to unlock the hall door
+go(Direction) :-
+    object_relation(location, player, Location),
+    object_relation(direction, Location, hall_exit, Direction),
+    (  object_relation(inventory, hall_exit_key, player)
     -> (showMessage("Congrats", "You escaped the house! Refresh the page to restart the game."), false)
-    ;  showMessage("Info", "You need a key to unlock the exit door.")).
+    ;  showMessage("Info", "You need the key to unlock the exit door.")), !.
+
+% Trying to unlock the garage door
+go(Direction) :-
+    object_relation(location, player, Location),
+    object_relation(direction, Location, garage_exit, Direction),
+    (  object_relation(inventory, garage_exit_key, player)
+    -> (showMessage("Congrats", "You escaped the house! Refresh the page to restart the game."), false)
+    ;  showMessage("Info", "You need the key to unlock the exit door.")), !.
 
 go(Direction) :-
     object_relation(location, player, Location),
@@ -87,11 +140,63 @@ go(Direction) :-
     assertz(object_relation(location, player, NewLocation)),
     update_ui.
 
+pet(dog) :-
+    % Check
+    object_relation(location, player, Location),
+    object_definition(character, dog),
+    object_information(alive, dog, true),
+    (  object_relation(inventory, dog_food, player)
+    -> true
+    ;  (
+         showMessage("Info", "You need food to pet the dog."),
+         false
+       )
+    ),
+    % Todo: Check the dog exists in the location
+    % Act
+    forall(
+      object_relation(inventory, Item, dog),
+      (
+        retract(object_relation(inventory, Item, dog)),
+        assertz(object_relation(inventory, Item, player))
+      )
+    ),
+    (  object_information(petted, dog, false)
+    -> (
+         (
+            object_relation(inventory, leash, player)
+         -> (
+              retract(object_relation(location, dog, Location)),
+              retract(object_information(tied, dog, false)),
+              assertz(object_information(tied, dog, true)),
+              retract(object_relation(inventory, leash, player)),
+              showMessage("Info", "You have successfully retrieved the key from the dog's neck. You also tied him with the leash and took him with you.")
+            )
+         ;  (
+              showMessage("Info", "You have successfully retrieved the key from the dog's neck.")
+            )
+         ),
+         retract(object_relation(inventory, dog_food, player)),
+         retract(object_information(petted, dog, false)),
+         assertz(object_information(petted, dog, true))
+       )
+    ;  true),
+    % Update
+    update_ui.
+
 kill(Object) :-
     % Check
     object_relation(location, player, Location),
     object_definition(character, Object),
     object_information(alive, Object, true),
+    (  object_information(healed, player, true)
+    -> true
+    ;  (
+         atomic_list_concat(['You need to heal yourself before attacking the ', Object, '.'], '', MessageBody),
+         showMessage("Info", MessageBody),
+         false
+       )
+    ),
     (  object_relation(inventory, knife, player)
     -> true
     ;  (
@@ -114,16 +219,40 @@ kill(Object) :-
     % Update
     update_ui.
 
+take(medical_dressing) :-
+    % Check
+    object_relation(location, player, Location),
+    object_definition(item, medical_dressing),
+    % Todo: Check that item not exists in inventory and exists in the location
+    % Act
+    retract(object_relation(location, medical_dressing, Location)),
+    retract(object_information(healed, player, false)),
+    assertz(object_information(healed, player, true)),
+    showMessage("Info", "You just healed yourself."),
+    % Update
+    update_ui, !.
+
 take(Object) :-
     % Check
     object_relation(location, player, Location),
     object_definition(item, Object),
+    (  setof(Item, object_relation(inventory, Item, player), Items)
+    -> (
+         length(Items, ItemsLength),
+         write(ItemsLength),
+         '@<'(ItemsLength, 2)
+       )
+    ;  true
+    ),
     % Todo: Check that item not exists in inventory and exists in the location
     % Act
     retract(object_relation(location, Object, Location)),
     assertz(object_relation(inventory, Object, player)),
     % Update
-    update_ui.
+    update_ui, !.
+
+take(_) :-
+    showMessage("Info", "Your inventory is full! Drop some items to make room in your inventory.").
 
 drop(Object) :-
     % Check
@@ -200,6 +329,17 @@ update_object_list_ui(ObjectListDomId, ObjectType, ObjectRelationType, ObjectRel
           set_html(ObjectNameDom, ObjectName)
         ),
         ( ObjectType == character -> (
+            ( ObjectName == dog -> (
+                forall(
+                  get_by_class(ObjectDom, 'object_pet', ObjectPetDom),
+                  (
+                    remove_class(ObjectPetDom, 'visually-hidden'),
+                    bind(ObjectPetDom, click, _, pet(ObjectName))
+                  )
+                )
+              )
+            ; true
+            ),
             forall(
               get_by_class(ObjectDom, 'object_kill', ObjectKillDom),
               (
