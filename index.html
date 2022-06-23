@@ -28,10 +28,6 @@
             left: 25%;
             width: 50%;
         }
-        .action-list-wrapper {
-            left: 60%;
-            top: 60%;
-        }
         @media (min-width: 576px) {
             .item_img {
                 height: 48px;
@@ -258,6 +254,41 @@
         </div>
     </div>
 </div>
+<div id="start_modal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="start_modal_title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="start_modal_title">Escape Room Game</h5>
+            </div>
+            <div class="modal-body">
+                Welcome to Escape Room game.
+                You try to escape a house where you were kidnapped and held captive. Good luck!
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                    Start
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="end_modal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="end_modal_title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="end_modal_title">Congratulations!</h5>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="window.location.reload();">
+                    New Game
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="./js/jquery-3.6.0.min.js"></script>
 <script src="./js/bootstrap.bundle.min.js"></script>
 <script src="./js/tau-prolog.js"></script>
@@ -305,11 +336,18 @@
         }
         $('#action_modal').modal('show');
     };
+    var showEnd = function(message) {
+        $('#end_modal .modal-body').html(message);
+        $('#end_modal').modal('show');
+    }
     var showMessage = function(title, body) {
         $('#message_modal .modal-title').html(title);
         $('#message_modal .modal-body').html(body);
         $('#message_modal').modal('show');
     };
+    var showStart = function() {
+        $('#start_modal').modal('show');
+    }
     var updateUI = function() {
         adjustRoomSize();
         enableTooltips();
@@ -327,13 +365,18 @@
             session.query('init.');
             session.answer(console.log);
         }, 'text');
+
         $(window).on('load', adjustRoomSize);
         $(window).resize(adjustRoomSize);
+
         updateUI();
+
         $('body').on('dragstart drop', function(e){
             e.preventDefault();
             return false;
         });
+
+        showStart();
     });
 </script>
 </body>

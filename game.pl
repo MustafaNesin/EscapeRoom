@@ -88,6 +88,7 @@ init :-
           ],
         _),
         get_by_id('kill_enabled_button', KillEnemyDom),
+        unbind(KillEnemyDom, click),
         bind(KillEnemyDom, click, _, kill(enemy)),
         apply('enableTooltips', [], _)
       )
@@ -107,6 +108,8 @@ init :-
         _),
         get_by_id('pet_enabled_button', PetDogDom),
         get_by_id('kill_enabled_button', KillDogDom),
+        unbind(PetDogDom, click),
+        unbind(KillDogDom, click),
         bind(PetDogDom, click, _, pet(dog)),
         bind(KillDogDom, click, _, kill(dog)),
         apply('enableTooltips', [], _)
@@ -138,23 +141,23 @@ go(Direction) :-
          assertz(object_information(locked, garden, false)),
          false
        )
-    ;  showMessage("Info", "You need the key to unlock the garden door.")), !.
+    ;  showMessage("Info", "You need the garden key to unlock the garden door.")), !.
 
 % Trying to unlock the hall door
 go(Direction) :-
     object_relation(location, player, Location),
     object_relation(direction, Location, hall_exit, Direction),
     (  object_relation(inventory, hall_exit_key, player)
-    -> (showMessage("Congrats", "You escaped the house! Refresh the page to restart the game."), false)
-    ;  showMessage("Info", "You need the key to unlock the exit door.")), !.
+    -> (showEndMessage, false)
+    ;  showMessage("Info", "You need the hall exit key to unlock the exit door.")), !.
 
 % Trying to unlock the garage door
 go(Direction) :-
     object_relation(location, player, Location),
     object_relation(direction, Location, garage_exit, Direction),
     (  object_relation(inventory, garage_exit_key, player)
-    -> (showMessage("Congrats", "You escaped the house! Refresh the page to restart the game."), false)
-    ;  showMessage("Info", "You need the key to unlock the exit door.")), !.
+    -> (showEndMessage, false)
+    ;  showMessage("Info", "You need the garage exit key to unlock the exit door.")), !.
 
 go(Direction) :-
     object_relation(location, player, Location),
@@ -193,7 +196,7 @@ pet(dog) :-
               retract(object_information(tied, dog, false)),
               assertz(object_information(tied, dog, true)),
               retract(object_relation(inventory, leash, player)),
-              showMessage("Info", "You have successfully retrieved the key from the dog's neck. You also tied him with the leash and took him with you.")
+              showMessage("Info", "You have successfully retrieved the key from the dog's neck. You also tied him with the leash and took with you.")
             )
          ;  (
               showMessage("Info", "You have successfully retrieved the key from the dog's neck.")
@@ -236,7 +239,11 @@ kill(Object) :-
       object_relation(inventory, Item, Object),
       (
         retract(object_relation(inventory, Item, Object)),
-        assertz(object_relation(inventory, Item, player))
+        assertz(object_relation(inventory, Item, player)),
+        % Temporary solution
+        object_definition(_, Item, ItemName),
+        atomic_list_concat(['You have killed the ', ObjectName, ' and got the ', ItemName, '.'], '', MessageBody),
+        showMessage("Info", MessageBody)
       )
     ),
     % Update
@@ -294,6 +301,38 @@ update_ui(MessageTitle, MessageBody) :-
 
 showMessage(MessageTitle, MessageBody) :-
     apply('showMessage', [MessageTitle, MessageBody], _).
+
+showEndMessage :-
+    (  object_information(alive, enemy, true)
+    -> (
+         object_information(tied, dog, true)
+         -> apply('showEnd', ["You escaped the house with your dog! You hope that the man who kidnapped you won't find you again."], _)
+         ;  (  object_information(alive, dog, true)
+            -> apply('showEnd', ["You escaped the house! You hope that the man who kidnapped you won't find you again."], _)
+            ;  apply('showEnd', ["You escaped the house but you feel remorse for killing the dog and hope the man won't find you again."], _)
+            )
+       )
+    ;  (
+         object_information(tied, dog, true)
+         -> (
+               object_relation(inventory, knife, player)
+            -> apply('showEnd', ["You escaped the house with your dog!"], _)
+            ;  apply('showEnd', ["You escaped the house with your dog but police looking for you because you left the knife at home."], _)
+            )
+         ;  (  object_information(alive, dog, true)
+            -> (
+                  object_relation(inventory, knife, player)
+               -> apply('showEnd', ["You escaped the house!"], _)
+               ;  apply('showEnd', ["You escaped the house but police looking for you because you left the knife at home."], _)
+               )
+            ;  (
+                  object_relation(inventory, knife, player)
+               -> apply('showEnd', ["You escaped the house but you feel remorse for killing the dog."], _)
+               ;  apply('showEnd', ["You escaped the house but police looking for you because you left the knife at home."], _)
+               )
+            )
+       )
+    ).
 
 update_ui :-
     apply('disableTooltips', [], _),
