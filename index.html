@@ -46,254 +46,247 @@
     <link rel="preload" href="./img/dog.png" as="image">
 </head>
 <body class="bg-black h-100 overflow-hidden">
-<div id="game" class="visually-hidden">
-    <img id="room_img" class="mh-100 mw-100 position-fixed"/>
-    <div id="room" class="position-fixed">
-        <div class="end-0 me-2 mt-2" style="z-index: 100">
-            <button type="button" class="btn btn-secondary d-none d-sm-block"
-                    data-bs-toggle="modal" data-bs-target="#info_modal">About</button>
-            <button type="button" class="btn btn-sm btn-info d-block d-sm-none"
-                    data-bs-toggle="modal" data-bs-target="#info_modal">About</button>
-        </div>
-        <img id="dog" src="./img/dog.png" alt="Dog" class="bottom-0 h-50 start-50 visually-hidden" role="button"/>
-        <img id="enemy" src="./img/enemy.png" alt="Enemy" class="bottom-0 h-75 start-50 visually-hidden" role="button"/>
-        <div class="d-flex flex-column top-0 justify-content-center px-3
-                item-list-wrapper rounded-bottom bg-dark bg-opacity-75">
-            <div class="text-center text-light pb-sm-2">
-                <span class="d-inline d-sm-none h6 player_location small"></span>
-                <span class="d-none d-sm-inline display-6 mb-0 player_location"></span>
-            </div>
-            <div id="room_items" class="d-flex flex-row flex-wrap justify-content-center"></div>
-        </div>
-        <div class="d-flex flex-column start-0 h-100 justify-content-center ms-1" style="z-index: 99">
-            <button type="button" class="go_west btn btn-dark border-secondary my-3 d-none d-sm-block"></button>
-            <button type="button" class="go_south btn btn-dark border-secondary my-3 d-none d-sm-block"></button>
-            <button type="button" class="go_west btn btn-sm btn-dark border-secondary my-3 d-block d-sm-none"></button>
-            <button type="button" class="go_south btn btn-sm btn-dark border-secondary my-3 d-block d-sm-none"></button>
-        </div>
-        <div class="d-flex flex-column end-0 h-100 justify-content-center me-1" style="z-index: 99">
-            <button type="button" class="go_north btn btn-dark border-secondary my-3 d-none d-sm-block"></button>
-            <button type="button" class="go_east btn btn-dark border-secondary my-3 d-none d-sm-block"></button>
-            <button type="button" class="go_north btn btn-sm btn-dark border-secondary my-3 d-block d-sm-none"></button>
-            <button type="button" class="go_east btn btn-sm btn-dark border-secondary my-3 d-block d-sm-none"></button>
-        </div>
-        <div id="inventory_items"
-             class="d-flex flex-row bottom-0 justify-content-center px-3 py-1 py-sm-2
-                item-list-wrapper rounded-top bg-dark bg-opacity-75"></div>
+<img id="room_img" class="mh-100 mw-100 position-fixed"/>
+<div id="room" class="position-fixed">
+    <div class="end-0 me-2 mt-2" style="z-index: 100">
+        <button type="button" class="btn btn-secondary d-none d-sm-block"
+                data-bs-toggle="modal" data-bs-target="#info_modal">About</button>
+        <button type="button" class="btn btn-sm btn-info d-block d-sm-none"
+                data-bs-toggle="modal" data-bs-target="#info_modal">About</button>
     </div>
-    <div id="action_modal" class="modal fade" tabindex="-1"
-         aria-labelledby="action_modal_title" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 id="action_modal_title" class="modal-title"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <button id="pet_enabled_button" type="button" class="btn btn-primary">
-                        Pet
-                    </button>
-                    <span class="d-inline-block" tabindex="0"
-                          data-bs-html="true" data-bs-toggle="tooltip" title="You don't have <u>Dog Food</u>.">
+    <img id="dog" src="./img/dog.png" alt="Dog" class="bottom-0 h-50 start-50 visually-hidden" role="button"/>
+    <img id="enemy" src="./img/enemy.png" alt="Enemy" class="bottom-0 h-75 start-50 visually-hidden" role="button"/>
+    <div class="d-flex flex-column top-0 justify-content-center px-3
+                item-list-wrapper rounded-bottom bg-dark bg-opacity-75">
+        <div class="text-center text-light pb-sm-2">
+            <span class="d-inline d-sm-none h6 player_location small"></span>
+            <span class="d-none d-sm-inline display-6 mb-0 player_location"></span>
+        </div>
+        <div id="room_items" class="d-flex flex-row flex-wrap justify-content-center"></div>
+    </div>
+    <div class="d-flex flex-column start-0 h-100 justify-content-center ms-1" style="z-index: 99">
+        <button type="button" class="go_west btn btn-dark border-secondary my-3 d-none d-sm-block"></button>
+        <button type="button" class="go_south btn btn-dark border-secondary my-3 d-none d-sm-block"></button>
+        <button type="button" class="go_west btn btn-sm btn-dark border-secondary my-3 d-block d-sm-none"></button>
+        <button type="button" class="go_south btn btn-sm btn-dark border-secondary my-3 d-block d-sm-none"></button>
+    </div>
+    <div class="d-flex flex-column end-0 h-100 justify-content-center me-1" style="z-index: 99">
+        <button type="button" class="go_north btn btn-dark border-secondary my-3 d-none d-sm-block"></button>
+        <button type="button" class="go_east btn btn-dark border-secondary my-3 d-none d-sm-block"></button>
+        <button type="button" class="go_north btn btn-sm btn-dark border-secondary my-3 d-block d-sm-none"></button>
+        <button type="button" class="go_east btn btn-sm btn-dark border-secondary my-3 d-block d-sm-none"></button>
+    </div>
+    <div id="inventory_items"
+         class="d-flex flex-row bottom-0 justify-content-center px-3 py-1 py-sm-2
+                item-list-wrapper rounded-top bg-dark bg-opacity-75"></div>
+</div>
+<div id="action_modal" class="modal fade" tabindex="-1"
+     aria-labelledby="action_modal_title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="action_modal_title" class="modal-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <button id="pet_enabled_button" type="button" class="btn btn-primary">
+                    Pet
+                </button>
+                <span class="d-inline-block" tabindex="0"
+                      data-bs-html="true" data-bs-toggle="tooltip" title="You don't have <u>Dog Food</u>.">
                     <button id="pet_disabled_button" type="button" class="btn btn-primary disabled">
                         Pet
                     </button>
                 </span>
-                    <button id="kill_enabled_button" type="button" class="btn btn-danger">
-                        Kill
-                    </button>
-                    <span class="d-inline-block" tabindex="0"
-                          data-bs-html="true" data-bs-toggle="tooltip" title="You don't have <u>Knife</u>.">
+                <button id="kill_enabled_button" type="button" class="btn btn-danger">
+                    Kill
+                </button>
+                <span class="d-inline-block" tabindex="0"
+                      data-bs-html="true" data-bs-toggle="tooltip" title="You don't have <u>Knife</u>.">
                     <button id="kill_disabled_button" type="button" class="btn btn-danger disabled">
                         Kill
                     </button>
                 </span>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Close
-                    </button>
-                </div>
             </div>
-        </div>
-    </div>
-    <div id="info_modal" class="modal fade" tabindex="-1"
-         aria-labelledby="info_modal_title" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 id="info_modal_title" class="modal-title">
-                        About this game
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div>An escape room game written in Prolog.</div>
-                    <div>
-                        <span class="fw-bold">Source:</span>
-                        <a href="https://github.com/MustafaNesin/EscapeRoom">github.com/MustafaNesin/EscapeRoom</a>
-                    </div>
-                    <div>
-                        <span class="fw-bold">Project members:</span>
-                        <a href="https://github.com/MustafaNesin">Mustafa Nesin</a>,
-                        Ayşe Orkan and
-                        <a href="https://github.com/akileulger">Akile Ülger</a>.
-                    </div>
-                    <div>
-                        <span class="fw-bold">Used libraries:</span>
-                        <a href="http://tau-prolog.org/">Tau-Prolog</a>,
-                        <a href="https://getbootstrap.com/">Bootstrap</a> and
-                        <a href="https://jquery.com/">JQuery</a>.
-                    </div>
-                    <div>
-                        <span class="fw-bold">Used resources:</span>
-                        <div class="overflow-auto" style="max-height: 200px">
-                            <ul>
-                                <li>
-                                    <a href="https://www.flaticon.com/free-icons/bandage" title="bandage icons">
-                                        Bandage icons created by Vitaly Gorbachev - Flaticon
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://www.flaticon.com/free-icons/knife" title="knife icons">
-                                        Knife icons created by Smashicons - Flaticon
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://www.flaticon.com/free-stickers/people" title="people stickers">
-                                        People stickers created by Stickers - Flaticon
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://www.flaticon.com/free-icons/dog" title="dog icons">
-                                        Dog icons created by Freepik - Flaticon
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://www.flaticon.com/free-icons/pet-food" title="pet food icons">
-                                        Pet food icons created by Freepik - Flaticon
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://www.flaticon.com/free-icons/keys" title="keys icons">
-                                        Keys icons created by Freepik - Flaticon
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://www.flaticon.com/free-icons/smart-key" title="smart key icons">
-                                        Smart key icons created by Freepik - Flaticon
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://www.flaticon.com/free-icons/leash" title="leash icons">
-                                        Leash icons created by Freepik - Flaticon
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://www.freepik.com/vectors/night-room">
-                                        Night room vector created by upklyak - www.freepik.com
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href='https://www.freepik.com/vectors/bathroom-cartoon'>
-                                        Bathroom cartoon vector created by upklyak - www.freepik.com
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://www.freepik.com/vectors/old-furniture">
-                                        Old furniture vector created by upklyak - www.freepik.com
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://www.freepik.com/vectors/dining-table">
-                                        Dining table vector created by upklyak - www.freepik.com
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://www.freepik.com/vectors/carpentry-tools">
-                                        Carpentry tools vector created by upklyak - www.freepik.com
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://www.freepik.com/vectors/home-yard">
-                                        Home yard vector created by upklyak - www.freepik.com
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="https://www.freepik.com/vectors/hallway">
-                                        Hallway vector created by upklyak - www.freepik.com
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        </p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            Close
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id="message_modal" class="modal fade" tabindex="-1"
-         aria-labelledby="message_modal_title" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 id="message_modal_title" class="modal-title"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id="start_modal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-         aria-labelledby="start_modal_title" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="start_modal_title">Escape Room Game</h5>
-                </div>
-                <div class="modal-body">
-                    Welcome to Escape Room game.
-                    You try to escape a house where you were kidnapped and held captive. Good luck!
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
-                        Start
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id="end_modal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-         aria-labelledby="end_modal_title" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="end_modal_title">Congratulations!</h5>
-                </div>
-                <div class="modal-body"></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="window.location.reload();">
-                        New Game
-                    </button>
-                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
             </div>
         </div>
     </div>
 </div>
-<div id="loading" class="d-flex flex-column justify-content-center align-items-center h-100 w-100">
-    <div class="spinner-border text-white text-center" role="status">
-        <span class="visually-hidden">Loading...</span>
+<div id="info_modal" class="modal fade" tabindex="-1"
+     aria-labelledby="info_modal_title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="info_modal_title" class="modal-title">
+                    About this game
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div>An escape room game written in Prolog.</div>
+                <div>
+                    <span class="fw-bold">Source:</span>
+                    <a href="https://github.com/MustafaNesin/EscapeRoom">github.com/MustafaNesin/EscapeRoom</a>
+                </div>
+                <div>
+                    <span class="fw-bold">Project members:</span>
+                    <a href="https://github.com/MustafaNesin">Mustafa Nesin</a>,
+                    Ayşe Orkan and
+                    <a href="https://github.com/akileulger">Akile Ülger</a>.
+                </div>
+                <div>
+                    <span class="fw-bold">Used libraries:</span>
+                    <a href="http://tau-prolog.org/">Tau-Prolog</a>,
+                    <a href="https://getbootstrap.com/">Bootstrap</a> and
+                    <a href="https://jquery.com/">JQuery</a>.
+                </div>
+                <div>
+                    <span class="fw-bold">Used resources:</span>
+                    <div class="overflow-auto" style="max-height: 200px">
+                        <ul>
+                            <li>
+                                <a href="https://www.flaticon.com/free-icons/bandage" title="bandage icons">
+                                    Bandage icons created by Vitaly Gorbachev - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.flaticon.com/free-icons/knife" title="knife icons">
+                                    Knife icons created by Smashicons - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.flaticon.com/free-stickers/people" title="people stickers">
+                                    People stickers created by Stickers - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.flaticon.com/free-icons/dog" title="dog icons">
+                                    Dog icons created by Freepik - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.flaticon.com/free-icons/pet-food" title="pet food icons">
+                                    Pet food icons created by Freepik - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.flaticon.com/free-icons/keys" title="keys icons">
+                                    Keys icons created by Freepik - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.flaticon.com/free-icons/smart-key" title="smart key icons">
+                                    Smart key icons created by Freepik - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.flaticon.com/free-icons/leash" title="leash icons">
+                                    Leash icons created by Freepik - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.freepik.com/vectors/night-room">
+                                    Night room vector created by upklyak - www.freepik.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href='https://www.freepik.com/vectors/bathroom-cartoon'>
+                                    Bathroom cartoon vector created by upklyak - www.freepik.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.freepik.com/vectors/old-furniture">
+                                    Old furniture vector created by upklyak - www.freepik.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.freepik.com/vectors/dining-table">
+                                    Dining table vector created by upklyak - www.freepik.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.freepik.com/vectors/carpentry-tools">
+                                    Carpentry tools vector created by upklyak - www.freepik.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.freepik.com/vectors/home-yard">
+                                    Home yard vector created by upklyak - www.freepik.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.freepik.com/vectors/hallway">
+                                    Hallway vector created by upklyak - www.freepik.com
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<div id="message_modal" class="modal fade" tabindex="-1"
+     aria-labelledby="message_modal_title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="message_modal_title" class="modal-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="start_modal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="start_modal_title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="start_modal_title">Escape Room Game</h5>
+            </div>
+            <div class="modal-body">
+                Welcome to Escape Room game.
+                You try to escape a house where you were kidnapped and held captive. Good luck!
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                    Start
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="end_modal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="end_modal_title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="end_modal_title">Congratulations!</h5>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="window.location.reload();">
+                    New Game
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 <script src="./js/jquery-3.6.0.min.js"></script>
@@ -364,12 +357,6 @@
         else
             inventoryItems.removeClass('visually-hidden');
     }
-    var onLoad = function () {
-        updateUI();
-        $('#loading').remove();
-        $('#game').removeClass('visually-hidden');
-        showStart();
-    }
 
     $(function() {
         $.get('./game.pl', function(game_pl) {
@@ -379,13 +366,17 @@
             session.answer(console.log);
         }, 'text');
 
+        $(window).on('load', adjustRoomSize);
+        $(window).resize(adjustRoomSize);
+
+        updateUI();
+
         $('body').on('dragstart drop', function(e){
             e.preventDefault();
             return false;
         });
 
-        $(window).resize(adjustRoomSize);
-        $(window).on('load', onLoad);
+        showStart();
     });
 </script>
 </body>
