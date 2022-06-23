@@ -303,8 +303,6 @@ showMessage(MessageTitle, MessageBody) :-
     apply('showMessage', [MessageTitle, MessageBody], _).
 
 showEndMessage :-
-    get_by_id('game', GameDom),
-    add_class(GameDom, 'visually-hidden'),
     (  object_information(alive, enemy, true)
     -> (
          object_information(tied, dog, true)
