@@ -1,110 +1,247 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="h-100">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Escape Room</title>
     <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .go_east::after, .go_north::after {
+            content: ' >';
+        }
+        .go_west::before, .go_south::before {
+            content: '< ';
+        }
+        #inventory_items>*, #room-items>* {
+            margin: 0 .25rem;
+        }
+        .item_img {
+            height: 24px;
+        }
+        #room, #room_img {
+            transform: translate(calc(50vw - 50%), calc(50vh - 50%));
+        }
+        #room>* {
+            position: absolute;
+        }
+        .item-list-wrapper {
+            left: 25%;
+            width: 50%;
+        }
+        .action-list-wrapper {
+            left: 60%;
+            top: 60%;
+        }
+        @media (min-width: 576px) {
+            .item_img {
+                height: 48px;
+            }
+        }
+    </style>
+    <link rel="preload" href="./img/bedroom.jpg" as="image">
+    <link rel="preload" href="./img/bathroom.jpg" as="image">
+    <link rel="preload" href="./img/living_room.jpg" as="image">
+    <link rel="preload" href="./img/garage.jpg" as="image">
+    <link rel="preload" href="./img/dining_room.jpg" as="image">
+    <link rel="preload" href="./img/kitchen.jpg" as="image">
+    <link rel="preload" href="./img/garden.jpg" as="image">
+    <link rel="preload" href="./img/hall.jpg" as="image">
+    <link rel="preload" href="./img/enemy.png" as="image">
+    <link rel="preload" href="./img/dog.png" as="image">
 </head>
-<body>
-<div class="container">
-    <div class="row">
-        <div class="col-12 order-1 col-sm-6 order-sm-1 col-lg-3 order-lg-0 my-3">
-            <div class="text-center mb-3">
-                <h1 class="display-6 mb-1">
-                    Characters
-                </h1>
-                <span class="text-muted">
-                    Characters in the room
-                </span>
-            </div>
-            <div id="room_characters"></div>
-        </div>
-        <div class="col-12 order-2 col-sm-6 order-sm-3 col-lg-3 order-lg-1 my-3">
-            <div class="text-center mb-3">
-                <h1 class="display-6 mb-1">
-                    Items
-                </h1>
-                <span class="text-muted">
-                    Items in the room
-                </span>
-            </div>
-            <div id="room_items"></div>
-        </div>
-        <div class="col-12 order-0 col-sm-6 order-sm-0 col-lg-3 order-lg-2 my-3">
-            <div class="text-center mb-3">
-                <h1 class="display-6 mb-1">
-                    Location
-                </h1>
-                <span class="text-muted">
-                    Your current location is
-                </span>
-                <span class="text-muted fw-bold player_location"></span>
-            </div>
-            <div>
-                <div class="row justify-content-center">
-                    <div class="col-auto">
-                        <button id="go_north" type="button" class="btn btn-primary">
-                            North
-                        </button>
-                    </div>
-                </div>
-                <div class="row justify-content-center my-1">
-                    <div class="col-auto">
-                        <button id="go_west" type="button" class="btn btn-primary">
-                            West
-                        </button>
-                    </div>
-                    <div class="col-auto">
-                        <button id="go_east" type="button" class="btn btn-primary">
-                            East
-                        </button>
-                    </div>
-                </div>
-                <div class="row justify-content-center">
-                    <div class="col-auto">
-                        <button id="go_south" type="button" class="btn btn-primary">
-                            South
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 order-3 col-sm-6 order-sm-2 col-lg-3 order-lg-3 my-3">
-            <div class="text-center mb-3">
-                <h1 class="display-6 mb-1">
-                    Inventory
-                </h1>
-                <span class="text-muted">
-                    Items in your inventory
-                </span>
-            </div>
-            <div id="inventory_items"></div>
-        </div>
+<body class="bg-black h-100 overflow-hidden">
+<img id="room_img" class="mh-100 mw-100 position-fixed"/>
+<div id="room" class="position-fixed">
+    <div class="end-0 me-2 mt-2" style="z-index: 100">
+        <button type="button" class="btn btn-secondary d-none d-sm-block"
+                data-bs-toggle="modal" data-bs-target="#info_modal">About</button>
+        <button type="button" class="btn btn-sm btn-info d-block d-sm-none"
+                data-bs-toggle="modal" data-bs-target="#info_modal">About</button>
     </div>
+    <img id="dog" src="./img/dog.png" alt="Dog" class="bottom-0 h-50 start-50 visually-hidden" role="button"/>
+    <img id="enemy" src="./img/enemy.png" alt="Enemy" class="bottom-0 h-75 start-50 visually-hidden" role="button"/>
+    <div class="d-flex flex-column top-0 justify-content-center px-3
+                item-list-wrapper rounded-bottom bg-dark bg-opacity-75">
+        <div class="text-center text-light pb-sm-2">
+            <span class="d-inline d-sm-none h6 player_location small"></span>
+            <span class="d-none d-sm-inline display-6 mb-0 player_location"></span>
+        </div>
+        <div id="room_items" class="d-flex flex-row flex-wrap justify-content-center"></div>
+    </div>
+    <div class="d-flex flex-column start-0 h-100 justify-content-center ms-1" style="z-index: 99">
+        <button type="button" class="go_west btn btn-dark border-secondary my-3 d-none d-sm-block"></button>
+        <button type="button" class="go_south btn btn-dark border-secondary my-3 d-none d-sm-block"></button>
+        <button type="button" class="go_west btn btn-sm btn-dark border-secondary my-3 d-block d-sm-none"></button>
+        <button type="button" class="go_south btn btn-sm btn-dark border-secondary my-3 d-block d-sm-none"></button>
+    </div>
+    <div class="d-flex flex-column end-0 h-100 justify-content-center me-1" style="z-index: 99">
+        <button type="button" class="go_north btn btn-dark border-secondary my-3 d-none d-sm-block"></button>
+        <button type="button" class="go_east btn btn-dark border-secondary my-3 d-none d-sm-block"></button>
+        <button type="button" class="go_north btn btn-sm btn-dark border-secondary my-3 d-block d-sm-none"></button>
+        <button type="button" class="go_east btn btn-sm btn-dark border-secondary my-3 d-block d-sm-none"></button>
+    </div>
+    <div id="inventory_items"
+         class="d-flex flex-row bottom-0 justify-content-center px-3 py-1 py-sm-2
+                item-list-wrapper rounded-top bg-dark bg-opacity-75"></div>
 </div>
-<div id="object_template" class="visually-hidden">
-    <div class="card mb-2 bg-light text-center">
-        <div class="card-body">
-            <h5 class="object_name card-title text-capitalize"></h5>
-            <div class="btn-group-sm" role="group" aria-label="Actions">
-                <button type="button" class="object_kill btn btn-danger visually-hidden">
-                    Kill
-                </button>
-                <button type="button" class="object_pet btn btn-primary visually-hidden">
+<div id="action_modal" class="modal fade" tabindex="-1"
+     aria-labelledby="action_modal_title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="action_modal_title" class="modal-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <button id="pet_enabled_button" type="button" class="btn btn-primary">
                     Pet
                 </button>
-                <button type="button" class="object_take btn btn-primary visually-hidden">
-                    Take
+                <span class="d-inline-block" tabindex="0"
+                      data-bs-html="true" data-bs-toggle="tooltip" title="You don't have <u>Dog Food</u>.">
+                    <button id="pet_disabled_button" type="button" class="btn btn-primary disabled">
+                        Pet
+                    </button>
+                </span>
+                <button id="kill_enabled_button" type="button" class="btn btn-danger">
+                    Kill
                 </button>
-                <button type="button" class="object_drop btn btn-secondary visually-hidden">
-                    Drop
+                <span class="d-inline-block" tabindex="0"
+                      data-bs-html="true" data-bs-toggle="tooltip" title="You don't have <u>Knife</u>.">
+                    <button id="kill_disabled_button" type="button" class="btn btn-danger disabled">
+                        Kill
+                    </button>
+                </span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
                 </button>
             </div>
         </div>
     </div>
 </div>
-<div id="message_modal" class="modal fade" tabindex="-1" aria-labelledby="message_modal_title" aria-hidden="true">
+<div id="info_modal" class="modal fade" tabindex="-1"
+     aria-labelledby="info_modal_title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="info_modal_title" class="modal-title">
+                    About this game
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div>An escape room game written in Prolog.</div>
+                <div>
+                    <span class="fw-bold">Source:</span>
+                    <a href="https://github.com/MustafaNesin/EscapeRoom">github.com/MustafaNesin/EscapeRoom</a>
+                </div>
+                <div>
+                    <span class="fw-bold">Project members:</span>
+                    <a href="https://github.com/MustafaNesin">Mustafa Nesin</a>,
+                    Ayşe Orkan and
+                    <a href="https://github.com/akileulger">Akile Ülger</a>.
+                </div>
+                <div>
+                    <span class="fw-bold">Used libraries:</span>
+                    <a href="http://tau-prolog.org/">Tau-Prolog</a>,
+                    <a href="https://getbootstrap.com/">Bootstrap</a> and
+                    <a href="https://jquery.com/">JQuery</a>.
+                </div>
+                <div>
+                    <span class="fw-bold">Used resources:</span>
+                    <div class="overflow-auto" style="max-height: 200px">
+                        <ul>
+                            <li>
+                                <a href="https://www.flaticon.com/free-icons/bandage" title="bandage icons">
+                                    Bandage icons created by Vitaly Gorbachev - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.flaticon.com/free-icons/knife" title="knife icons">
+                                    Knife icons created by Smashicons - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.flaticon.com/free-stickers/people" title="people stickers">
+                                    People stickers created by Stickers - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.flaticon.com/free-icons/dog" title="dog icons">
+                                    Dog icons created by Freepik - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.flaticon.com/free-icons/pet-food" title="pet food icons">
+                                    Pet food icons created by Freepik - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.flaticon.com/free-icons/keys" title="keys icons">
+                                    Keys icons created by Freepik - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.flaticon.com/free-icons/smart-key" title="smart key icons">
+                                    Smart key icons created by Freepik - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.flaticon.com/free-icons/leash" title="leash icons">
+                                    Leash icons created by Freepik - Flaticon
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.freepik.com/vectors/night-room">
+                                    Night room vector created by upklyak - www.freepik.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href='https://www.freepik.com/vectors/bathroom-cartoon'>
+                                    Bathroom cartoon vector created by upklyak - www.freepik.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.freepik.com/vectors/old-furniture">
+                                    Old furniture vector created by upklyak - www.freepik.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.freepik.com/vectors/dining-table">
+                                    Dining table vector created by upklyak - www.freepik.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.freepik.com/vectors/carpentry-tools">
+                                    Carpentry tools vector created by upklyak - www.freepik.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.freepik.com/vectors/home-yard">
+                                    Home yard vector created by upklyak - www.freepik.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.freepik.com/vectors/hallway">
+                                    Hallway vector created by upklyak - www.freepik.com
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<div id="message_modal" class="modal fade" tabindex="-1"
+     aria-labelledby="message_modal_title" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -125,20 +262,78 @@
 <script src="./js/bootstrap.bundle.min.js"></script>
 <script src="./js/tau-prolog.js"></script>
 <script>
+    const roomImg = $('#room_img');
+    const room = $('#room');
+    const inventoryItems = $("#inventory_items");
+
+    var adjustRoomSize = function() {
+        room.height(roomImg.height());
+        room.width(roomImg.width());
+    };
+    var disableTooltips = function() {
+        $('[data-bs-toggle="tooltip"]').tooltip('dispose');
+    };
+    var enableTooltips = function() {
+        $('[data-bs-toggle="tooltip"]').tooltip();
+    };
+    var hideActions = function() {
+        $('#action_modal').modal('hide');
+    }
+    var showActions = function(title, canKill, canPet, displayPetButton) {
+        $('#action_modal .modal-title').html(title);
+        if (canKill) {
+            $('#action_modal #kill_enabled_button').removeClass('visually-hidden');
+            $('#action_modal #kill_disabled_button').addClass('visually-hidden');
+        }
+        else {
+            $('#action_modal #kill_enabled_button').addClass('visually-hidden');
+            $('#action_modal #kill_disabled_button').removeClass('visually-hidden');
+        }
+        if (canPet) {
+            if (displayPetButton)
+                $('#action_modal #pet_enabled_button').removeClass('visually-hidden');
+            else
+                $('#action_modal #pet_enabled_button').addClass('visually-hidden');
+            $('#action_modal #pet_disabled_button').addClass('visually-hidden');
+        }
+        else {
+            $('#action_modal #pet_enabled_button').addClass('visually-hidden');
+            if (displayPetButton)
+                $('#action_modal #pet_disabled_button').removeClass('visually-hidden');
+            else
+                $('#action_modal #pet_disabled_button').addClass('visually-hidden');
+        }
+        $('#action_modal').modal('show');
+    };
     var showMessage = function(title, body) {
         $('#message_modal .modal-title').html(title);
         $('#message_modal .modal-body').html(body);
         $('#message_modal').modal('show');
     };
+    var updateUI = function() {
+        adjustRoomSize();
+        enableTooltips();
+
+        if(inventoryItems.children("img").length === 0)
+            inventoryItems.addClass('visually-hidden');
+        else
+            inventoryItems.removeClass('visually-hidden');
+    }
 
     $(function() {
         $.get('./game.pl', function(game_pl) {
             const session = pl.create();
-
             session.consult(game_pl);
             session.query('init.');
             session.answer(console.log);
         }, 'text');
+        $(window).on('load', adjustRoomSize);
+        $(window).resize(adjustRoomSize);
+        updateUI();
+        $('body').on('dragstart drop', function(e){
+            e.preventDefault();
+            return false;
+        });
     });
 </script>
 </body>

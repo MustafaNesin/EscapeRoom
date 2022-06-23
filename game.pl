@@ -4,27 +4,27 @@
 :- dynamic(object_information/3).
 :- dynamic(object_relation/3).
 
-% object_definition(Type, Object)
-object_definition(room, bedroom).
-object_definition(room, bathroom).
-object_definition(room, living_room).
-object_definition(room, garage).
-object_definition(room, dining_room).
-object_definition(room, kitchen).
-object_definition(room, garden).
-object_definition(room, hall).
-object_definition(room, hall_exit).
-object_definition(room, garage_exit).
-object_definition(character, player).
-object_definition(character, enemy).
-object_definition(character, dog).
-object_definition(item, leash).
-object_definition(item, medical_dressing).
-object_definition(item, garden_key).
-object_definition(item, knife).
-object_definition(item, dog_food).
-object_definition(item, hall_exit_key).
-object_definition(item, garage_exit_key).
+% object_definition(Type, Object, Name)
+object_definition(room, bedroom, 'Bedroom').
+object_definition(room, bathroom, 'Bathroom').
+object_definition(room, living_room, 'Living Room').
+object_definition(room, garage, 'Garage').
+object_definition(room, dining_room, 'Dining Room').
+object_definition(room, kitchen, 'Kitchen').
+object_definition(room, garden, 'Garden').
+object_definition(room, hall, 'Hall').
+object_definition(room, hall_exit, 'Exit').
+object_definition(room, garage_exit, 'Exit').
+object_definition(character, player, 'Player').
+object_definition(character, enemy, 'Enemy').
+object_definition(character, dog, 'Dog').
+object_definition(item, leash, 'Leash').
+object_definition(item, bandage, 'Bandage').
+object_definition(item, garden_key, 'Garden Key').
+object_definition(item, knife, 'Knife').
+object_definition(item, dog_food, 'Dog Food').
+object_definition(item, hall_exit_key, 'Hall Exit Key').
+object_definition(item, garage_exit_key, 'Garage Exit Key').
 
 % object_information(Type, Object, Value)
 object_information(healed, player, false).
@@ -37,7 +37,7 @@ object_information(locked, garden, true).
 % object_relation(Type, Object1, Object2)
 object_relation(location, player, bedroom).
 object_relation(location, leash, bedroom).
-object_relation(location, medical_dressing, bathroom).
+object_relation(location, bandage, bathroom).
 object_relation(location, knife, garage).
 object_relation(location, dog_food, dining_room).
 object_relation(location, enemy, kitchen).
@@ -55,37 +55,61 @@ object_relation(direction, living_room, hall, east).
 object_relation(direction, living_room, garage, south).
 object_relation(direction, living_room, bedroom, west).
 object_relation(direction, garage, living_room, north).
+object_relation(direction, garage, garden, east).
 object_relation(direction, garage, garage_exit, south).
 object_relation(direction, dining_room, kitchen, east).
 object_relation(direction, dining_room, living_room, south).
 object_relation(direction, kitchen, dining_room, west).
-object_relation(direction, garden, hall, north).
+object_relation(direction, garden, garage, west).
 object_relation(direction, hall, living_room, west).
 object_relation(direction, hall, hall_exit, east).
-object_relation(direction, hall, garden, south).
 object_relation(direction, hall_exit, hall, west).
 object_relation(direction, garage_exit, garage, north).
 
 init :-
     % Bind direction buttons
-    get_by_id('go_north', GoNorthDom),
-    get_by_id('go_east', GoEastDom),
-    get_by_id('go_south', GoSouthDom),
-    get_by_id('go_west', GoWestDom),
-    bind(GoNorthDom, click, _, go(north)),
-    bind(GoEastDom, click, _, go(east)),
-    bind(GoSouthDom, click, _, go(south)),
-    bind(GoWestDom, click, _, go(west)),
-    % Bind keyboard keys
-    get_by_tag('body', BodyDom),
-    bind(BodyDom, keydown, EventDom, (
-        event_property(EventDom, key, Key),
-        ( Key == (w) -> go(north)
-        ; Key == (a) -> go(west)
-        ; Key == (s) -> go(south)
-        ; Key == (d) -> go(east)
-        ),
-        prevent_default(EventDom)
+    forall(get_by_class('go_north', GoNorthDom), bind(GoNorthDom, click, _, go(north))),
+    forall(get_by_class('go_east', GoEastDom), bind(GoEastDom, click, _, go(east))),
+    forall(get_by_class('go_south', GoSouthDom), bind(GoSouthDom, click, _, go(south))),
+    forall(get_by_class('go_west', GoWestDom), bind(GoWestDom, click, _, go(west))),
+    % Bind character click events
+    get_by_id('enemy', EnemyDom),
+    get_by_id('dog', DogDom),
+    bind(EnemyDom, click, _,
+      (
+        apply('disableTooltips', [], _),
+        (object_relation(inventory, knife, player) -> CanKill = 1 ; CanKill = 0),
+        apply('showActions',
+          [
+            'Actions for the enemy',
+            CanKill,
+            0,
+            0
+          ],
+        _),
+        get_by_id('kill_enabled_button', KillEnemyDom),
+        bind(KillEnemyDom, click, _, kill(enemy)),
+        apply('enableTooltips', [], _)
+      )
+    ),
+    bind(DogDom, click, _,
+      (
+        apply('disableTooltips', [], _),
+        (object_relation(inventory, knife, player) -> CanKill = 1 ; CanKill = 0),
+        (object_relation(inventory, dog_food, player) -> CanPet = 1 ; CanPet = 0),
+        apply('showActions',
+          [
+            'Actions for the dog',
+            CanKill,
+            CanPet,
+            1
+          ],
+        _),
+        get_by_id('pet_enabled_button', PetDogDom),
+        get_by_id('kill_enabled_button', KillDogDom),
+        bind(PetDogDom, click, _, pet(dog)),
+        bind(KillDogDom, click, _, kill(dog)),
+        apply('enableTooltips', [], _)
       )
     ),
     % Update user interface
@@ -110,7 +134,6 @@ go(Direction) :-
     object_information(locked, garden, true),
     (  object_relation(inventory, garden_key, player)
     -> (
-         retract(object_relation(inventory, garden_key, player)),
          retract(object_information(locked, garden, true)),
          assertz(object_information(locked, garden, false)),
          false
@@ -143,7 +166,7 @@ go(Direction) :-
 pet(dog) :-
     % Check
     object_relation(location, player, Location),
-    object_definition(character, dog),
+    object_definition(character, dog, _),
     object_information(alive, dog, true),
     (  object_relation(inventory, dog_food, player)
     -> true
@@ -182,17 +205,17 @@ pet(dog) :-
        )
     ;  true),
     % Update
-    update_ui.
+    update_ui, !.
 
 kill(Object) :-
     % Check
     object_relation(location, player, Location),
-    object_definition(character, Object),
+    object_definition(character, Object, ObjectName),
     object_information(alive, Object, true),
     (  object_information(healed, player, true)
     -> true
     ;  (
-         atomic_list_concat(['You need to heal yourself before attacking the ', Object, '.'], '', MessageBody),
+         atomic_list_concat(['You need to heal yourself before attacking the ', ObjectName, '.'], '', MessageBody),
          showMessage("Info", MessageBody),
          false
        )
@@ -200,7 +223,7 @@ kill(Object) :-
     (  object_relation(inventory, knife, player)
     -> true
     ;  (
-         atomic_list_concat(['You need a knife to kill the ', Object, '.'], '', MessageBody),
+         atomic_list_concat(['You need a knife to kill the ', ObjectName, '.'], '', MessageBody),
          showMessage("Info", MessageBody),
          false
        )
@@ -217,15 +240,15 @@ kill(Object) :-
       )
     ),
     % Update
-    update_ui.
+    update_ui, !.
 
-take(medical_dressing) :-
+take(bandage) :-
     % Check
     object_relation(location, player, Location),
-    object_definition(item, medical_dressing),
+    object_definition(item, bandage, _),
     % Todo: Check that item not exists in inventory and exists in the location
     % Act
-    retract(object_relation(location, medical_dressing, Location)),
+    retract(object_relation(location, bandage, Location)),
     retract(object_information(healed, player, false)),
     assertz(object_information(healed, player, true)),
     showMessage("Info", "You just healed yourself."),
@@ -235,7 +258,7 @@ take(medical_dressing) :-
 take(Object) :-
     % Check
     object_relation(location, player, Location),
-    object_definition(item, Object),
+    object_definition(item, Object, _),
     (  setof(Item, object_relation(inventory, Item, player), Items)
     -> (
          length(Items, ItemsLength),
@@ -257,7 +280,7 @@ take(_) :-
 drop(Object) :-
     % Check
     object_relation(location, player, Location),
-    object_definition(item, Object),
+    object_definition(item, Object, _),
     % Todo: Check that item exists in inventory and not exists in the location
     % Act
     retract(object_relation(inventory, Object, player)),
@@ -270,104 +293,131 @@ update_ui(MessageTitle, MessageBody) :-
     showMessage(MessageTitle, MessageBody).
 
 showMessage(MessageTitle, MessageBody) :-
-    prop('showMessage', ShowMessage),
-    apply(ShowMessage, [MessageTitle, MessageBody], _).
+    apply('showMessage', [MessageTitle, MessageBody], _).
 
 update_ui :-
+    apply('disableTooltips', [], _),
     object_relation(location, player, PlayerLocation),
-    % Update direction buttons disability
-    get_by_id('go_north', GoNorthDom),
-    get_by_id('go_east', GoEastDom),
-    get_by_id('go_south', GoSouthDom),
-    get_by_id('go_west', GoWestDom),
-    (  object_relation(direction, PlayerLocation, _, north)
-    -> remove_class(GoNorthDom, 'disabled')
-    ;  add_class(GoNorthDom, 'disabled')
+    object_definition(room, PlayerLocation, PlayerLocationName),
+    get_by_id('room_img', RoomImageDom),
+    atomic_list_concat(['./img/', PlayerLocation, '.jpg'], '', RoomImage),
+    set_attr(RoomImageDom, 'src', RoomImage),
+    set_attr(RoomImageDom, 'alt', PlayerLocationName),
+    % Update direction buttons visibility
+    forall(
+      get_by_class('go_north', GoNorthDom),
+      (  object_relation(direction, PlayerLocation, NorthLocation, north)
+      -> (
+           remove_class(GoNorthDom, 'visually-hidden'),
+           object_definition(room, NorthLocation, NorthLocationName),
+           set_html(GoNorthDom, NorthLocationName)
+         )
+      ;  add_class(GoNorthDom, 'visually-hidden')
+      )
     ),
-    (  object_relation(direction, PlayerLocation, _, east)
-    -> remove_class(GoEastDom, 'disabled')
-    ;  add_class(GoEastDom, 'disabled')
+    forall(
+      get_by_class('go_east', GoEastDom),
+      (  object_relation(direction, PlayerLocation, EastLocation, east)
+      -> (
+           remove_class(GoEastDom, 'visually-hidden'),
+           object_definition(room, EastLocation, EastLocationName),
+           set_html(GoEastDom, EastLocationName)
+         )
+      ;  add_class(GoEastDom, 'visually-hidden')
+      )
     ),
-    (  object_relation(direction, PlayerLocation, _, south)
-    -> remove_class(GoSouthDom, 'disabled')
-    ;  add_class(GoSouthDom, 'disabled')
+    forall(
+      get_by_class('go_south', GoSouthDom),
+      (  object_relation(direction, PlayerLocation, SouthLocation, south)
+      -> (
+           remove_class(GoSouthDom, 'visually-hidden'),
+           object_definition(room, SouthLocation, SouthLocationName),
+           set_html(GoSouthDom, SouthLocationName)
+         )
+      ;  add_class(GoSouthDom, 'visually-hidden')
+      )
     ),
-    (  object_relation(direction, PlayerLocation, _, west)
-    -> remove_class(GoWestDom, 'disabled')
-    ;  add_class(GoWestDom, 'disabled')
+    forall(
+      get_by_class('go_west', GoWestDom),
+      (  object_relation(direction, PlayerLocation, WestLocation, west)
+      -> (
+           remove_class(GoWestDom, 'visually-hidden'),
+           object_definition(room, WestLocation, WestLocationName),
+           set_html(GoWestDom, WestLocationName)
+         )
+      ;  add_class(GoWestDom, 'visually-hidden')
+      )
     ),
     % Update player location
     forall(
       get_by_class('player_location', PlayerLocationDom),
-      set_html(PlayerLocationDom, PlayerLocation)
+      set_html(PlayerLocationDom, PlayerLocationName)
     ),
     % Update room characters
-    update_object_list_ui('room_characters', character, location, PlayerLocation),
-    % Update room items
-    update_object_list_ui('room_items', item, location, PlayerLocation),
-    % Update inventory items
-    update_object_list_ui('inventory_items', item, inventory, player).
-
-update_object_list_ui(ObjectListDomId, ObjectType, ObjectRelationType, ObjectRelatedObject) :-
-    get_by_id(ObjectListDomId, ObjectListDom),
-    set_html(ObjectListDom, ''),
-    get_by_id('object_template', ObjectTemplateDom),
-    html(ObjectTemplateDom, ObjectHtml),
     forall(
       (
-        object_relation(ObjectRelationType, ObjectName, ObjectRelatedObject),
-        object_definition(ObjectType, ObjectName),
-        (  ObjectType == character
-        -> (ObjectName \= player, object_information(alive, ObjectName, true))
-        ;  true)
+        object_definition(character, Character, _),
+        Character \= player,
+        get_by_id(Character, CharacterDom)
       ),
       (
-        create('div', ObjectDom),
-        html(ObjectDom, ObjectHtml),
-        forall(
-          get_by_class(ObjectDom, 'object_name', ObjectNameDom),
-          set_html(ObjectNameDom, ObjectName)
-        ),
-        ( ObjectType == character -> (
-            ( ObjectName == dog -> (
-                forall(
-                  get_by_class(ObjectDom, 'object_pet', ObjectPetDom),
-                  (
-                    remove_class(ObjectPetDom, 'visually-hidden'),
-                    bind(ObjectPetDom, click, _, pet(ObjectName))
-                  )
-                )
-              )
-            ; true
-            ),
-            forall(
-              get_by_class(ObjectDom, 'object_kill', ObjectKillDom),
-              (
-                remove_class(ObjectKillDom, 'visually-hidden'),
-                bind(ObjectKillDom, click, _, kill(ObjectName))
-              )
-            )
-          )
-        ; (ObjectType == item, ObjectRelationType == location) -> (
-            forall(
-              get_by_class(ObjectDom, 'object_take', ObjectTakeDom),
-              (
-                remove_class(ObjectTakeDom, 'visually-hidden'),
-                bind(ObjectTakeDom, click, _, take(ObjectName))
-              )
-            )
-          )
-        ; (ObjectType == item, ObjectRelationType == inventory) -> (
-            forall(
-              get_by_class(ObjectDom, 'object_drop', ObjectDropDom),
-              (
-                remove_class(ObjectDropDom, 'visually-hidden'),
-                bind(ObjectDropDom, click, _, drop(ObjectName))
-              )
-            )
-          )
-        ; true
-        ),
-        append_child(ObjectListDom, ObjectDom)
+        (
+          object_relation(location, Character, PlayerLocation),
+          object_information(alive, Character, true)
+        )
+        -> remove_class(CharacterDom, 'visually-hidden')
+        ;  add_class(CharacterDom, 'visually-hidden')
       )
-    ).
+    ),
+    % Update room items
+    get_by_id('room_items', RoomItemListDom),
+    set_html(RoomItemListDom, ''),
+    forall(
+      (
+        object_relation(location, Item, PlayerLocation),
+        object_definition(item, Item, ItemName),
+        create('img', ItemDom)
+      ),
+      (
+        atomic_list_concat(['./img/', Item, '.png'], '', ItemImage),
+        atomic_list_concat(['Take the <u>', ItemName, '</u>.'], '', ItemTitle),
+        set_attr(ItemDom, 'alt', ItemName),
+        set_attr(ItemDom, 'class', 'item_img mx-2 mb-2'),
+        set_attr(ItemDom, 'data-bs-html', 'true'),
+        set_attr(ItemDom, 'data-bs-toggle', 'tooltip'),
+        set_attr(ItemDom, 'data-bs-placement', 'bottom'),
+        set_attr(ItemDom, 'role', 'button'),
+        set_attr(ItemDom, 'src', ItemImage),
+        set_attr(ItemDom, 'title', ItemTitle),
+        bind(ItemDom, click, _, take(Item)),
+        append_child(RoomItemListDom, ItemDom),
+        apply('hideActions', [], _)
+      )
+    ),
+    % Update inventory items
+    get_by_id('inventory_items', InventoryItemListDom),
+    set_html(InventoryItemListDom, ''),
+    forall(
+      (
+        object_relation(inventory, Item, player),
+        object_definition(item, Item, ItemName),
+        create('img', ItemDom)
+      ),
+      (
+        atomic_list_concat(['./img/', Item, '.png'], '', ItemImage),
+        atomic_list_concat(['Drop the <u>', ItemName, '</u>.'], '', ItemTitle),
+        set_attr(ItemDom, 'alt', ItemName),
+        set_attr(ItemDom, 'class', 'item_img mx-2'),
+        set_attr(ItemDom, 'data-bs-html', 'true'),
+        set_attr(ItemDom, 'data-bs-toggle', 'tooltip'),
+        set_attr(ItemDom, 'data-bs-placement', 'top'),
+        set_attr(ItemDom, 'role', 'button'),
+        set_attr(ItemDom, 'src', ItemImage),
+        set_attr(ItemDom, 'title', ItemTitle),
+        bind(ItemDom, click, _, drop(Item)),
+        append_child(InventoryItemListDom, ItemDom),
+        apply('hideActions', [], _)
+      )
+    ),
+    % Call the JS function
+    apply('updateUI', [], _).
