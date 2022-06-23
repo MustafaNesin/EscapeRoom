@@ -48,7 +48,7 @@
 <body class="bg-black h-100 overflow-hidden">
 <div id="game" class="visually-hidden">
     <img id="room_img" class="mh-100 mw-100 position-fixed"/>
-    <div id="room" class="position-fixed user-select-none">
+    <div id="room" class="position-fixed">
         <div class="end-0 me-2 mt-2" style="z-index: 100">
             <button type="button" class="btn btn-secondary d-none d-sm-block"
                     data-bs-toggle="modal" data-bs-target="#info_modal">About</button>
@@ -304,14 +304,6 @@
     const room = $('#room');
     const inventoryItems = $("#inventory_items");
 
-    var absorbEvent_ = function(event) {
-        var e = event || window.event;
-        e.preventDefault && e.preventDefault();
-        e.stopPropagation && e.stopPropagation();
-        e.cancelBubble = true;
-        e.returnValue = false;
-        return false;
-    }
     var adjustRoomSize = function() {
         room.height(roomImg.height());
         room.width(roomImg.width());
@@ -324,14 +316,6 @@
     };
     var hideActions = function() {
         $('#action_modal').modal('hide');
-    }
-    var preventLongPressMenu = function(nodes) {
-        for(var i=0; i < nodes.length; i++){
-            nodes[i].ontouchstart = absorbEvent_;
-            nodes[i].ontouchmove = absorbEvent_;
-            nodes[i].ontouchend = absorbEvent_;
-            nodes[i].ontouchcancel = absorbEvent_;
-        }
     }
     var showActions = function(title, canKill, canPet, displayPetButton) {
         $('#action_modal .modal-title').html(title);
@@ -382,7 +366,6 @@
     }
     var onLoad = function () {
         updateUI();
-        preventLongPressMenu(document.getElementsByTagName('img'));
         $('#loading').remove();
         $('#game').removeClass('visually-hidden');
         showStart();
