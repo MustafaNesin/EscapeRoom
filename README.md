@@ -3,7 +3,7 @@ An escape room game written in Prolog.
 
 ## Project Members
 - [Mustafa Nesin](https://github.com/MustafaNesin)
-- Ayşe Orkan
+- [Ayşe Orkan](https://github.com/Ayseorkan)
 - [Akile Ülger](https://github.com/akileulger)
 
 ## Used Libraries
